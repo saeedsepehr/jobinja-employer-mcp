@@ -1,6 +1,6 @@
 {
   "name": "jobinja-employer",
-  "displayName": "Jobinja Employer — شورت‌لیست رزومه‌های جابینجا",
+  "displayName": "Jobinja Employer",
   "version": "0.3.1",
   "description": "For employers hiring on Jobinja: review the resumes your job ads receive, shortlist the best matches with low token use, and record stars, team notes, folders and rejections in the Jobinja employer panel. Unofficial.",
   "author": {
