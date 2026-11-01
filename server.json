@@ -1,0 +1,24 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.saeedsepehr/jobinja-employer-mcp",
+  "title": "Jobinja Employer",
+  "description": "Review and shortlist resumes received in the Jobinja employer panel with low token use.",
+  "repository": {
+    "url": "https://github.com/saeedsepehr/jobinja-employer-mcp",
+    "source": "github"
+  },
+  "version": "0.2.0",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "jobinja-employer-mcp",
+      "version": "0.2.0",
+      "runtimeHint": "uvx",
+      "transport": { "type": "stdio" },
+      "environmentVariables": [
+        { "name": "JOBINJA_READ_ONLY", "description": "Set to 1 to disable the tools that change data", "isRequired": false },
+        { "name": "JOBINJA_DOWNLOAD_DIR", "description": "Folder for downloaded resumes", "isRequired": false }
+      ]
+    }
+  ]
+}

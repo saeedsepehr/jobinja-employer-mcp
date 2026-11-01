@@ -1,3 +1,4 @@
+<!-- mcp-name: io.github.saeedsepehr/jobinja-employer-mcp -->
 <div dir="rtl">
 
 # jobinja-employer-mcp | مرور سریع و شورت‌لیست رزومه‌های دریافتی پنل کارفرمایی جابینجا با هوش مصنوعی

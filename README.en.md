@@ -1,3 +1,4 @@
+<!-- mcp-name: io.github.saeedsepehr/jobinja-employer-mcp -->
 # jobinja-employer-mcp
 
 An unofficial [MCP](https://modelcontextprotocol.io) server for employers who hire on [Jobinja](https://jobinja.ir).
