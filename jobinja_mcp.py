@@ -113,7 +113,7 @@ class Panel:
         if "/auth/" in page.url:
             await page.close()
             raise RuntimeError(
-                "Not logged in to Jobinja (session missing or expired). Run: "
+                "Not logged in to Jobinja (session missing or expired). Call the open_login_window tool, or run: "
                 "jobinja-employer-mcp login"
             )
         return page
@@ -761,22 +761,40 @@ async def restore_applicant(post: str, applicant_id: str, page_hint: int | None 
             await p.close()
 
 
-async def login():
+async def login(timeout_s: int = 900) -> bool:
+    """Open a visible browser window on the panel's sign-in page and wait until the user has signed in."""
     PROFILE_DIR.mkdir(parents=True, exist_ok=True)
     async with async_playwright() as pw:
         ctx = await _launch(pw, headless=False)
         page = ctx.pages[0] if ctx.pages else await ctx.new_page()
         await page.goto(PANEL + "/dashboard")
-        print("Sign in to Jobinja in the opened window. It closes itself once the panel loads.")
-        for _ in range(900):
+        print("Sign in to Jobinja in the opened window. It closes itself once the panel loads.", file=sys.stderr)
+        ok = False
+        for _ in range(timeout_s):
             if page.url.startswith(PANEL) and "/auth/" not in page.url:
-                print("Logged in:", page.url)
+                print("Logged in:", page.url, file=sys.stderr)
+                ok = True
                 break
             await asyncio.sleep(1)
         else:
-            print("Timed out waiting for login.")
+            print("Timed out waiting for login.", file=sys.stderr)
         await asyncio.sleep(2)
         await ctx.close()
+    return ok
+
+
+@mcp.tool()
+async def open_login_window() -> dict:
+    """Open a browser window on the user's screen to sign in to the Jobinja employer panel (first use, or when
+    jobinja_status reports the session expired). The user types their own credentials; waits up to 10 minutes."""
+    async with panel.lock:
+        if panel._ctx is not None:  # the profile can only be open once
+            await panel._ctx.close()
+            await panel._pw.stop()
+            panel._ctx = panel._pw = None
+        ok = await login(timeout_s=600)
+        panel.company = os.environ.get("JOBINJA_COMPANY")
+    return {"logged_in": ok}
 
 
 def serve_http(host: str, port: int):

@@ -27,6 +27,7 @@
 | ابزار | کاربرد |
 | --- | --- |
 | `jobinja_status` | بررسی وضعیت ورود و شرکت متصل |
+| `open_login_window` | باز کردن پنجره ورود به پنل کارفرمایی، بدون نیاز به ترمینال |
 | `list_posts` | فهرست آگهی‌های استخدام با تعداد متقاضیان در هر مرحله |
 | `list_applicants` | فهرست متقاضیان هر آگهی با فیلتر وضعیت، ستاره‌دار و دارای یادداشت |
 | `screen_applicants` | خلاصه فشرده و کم‌مصرف یک صفحه (۲۵ نفر) از متقاضیان برای شورت‌لیست سریع |
@@ -42,6 +43,10 @@
 
 باز کردن متقاضیِ «بررسی‌نشده» آن را دیده‌شده علامت می‌زند، دقیقاً مانند باز کردن آن در خود پنل.
 
+## نصب سریع در Claude Desktop (یک‌کلیکی)
+
+فایل `jobinja-employer-mcp-<نسخه>.mcpb` را از [صفحه انتشارها](https://github.com/saeedsepehr/jobinja-employer-mcp/releases/latest) دانلود کنید و روی آن دوبار کلیک کنید (یا در Claude Desktop از Settings ← Extensions آن را نصب کنید). سپس به Claude بگویید «پنجره ورود جابینجا را باز کن» و یک بار وارد پنل کارفرمایی شوید. Google Chrome باید نصب باشد.
+
 ## نصب
 
 پیش‌نیازها: پایتون ۳.۱۰ یا جدیدتر و مرورگر Google Chrome. اگر Chrome ندارید، Edge هم کار می‌کند (`JOBINJA_BROWSER=msedge`) یا مرورگر داخلی Playwright (`JOBINJA_BROWSER=chromium` و سپس `playwright install chromium`).
@@ -53,17 +58,17 @@
 
    پس از `ensurepath` پنجره ترمینال را ببندید و دوباره باز کنید.
 
-۲. نصب jobinja-employer-mcp:
+۲. نصب jobinja-employer-mcp (یا اجرای مستقیم با `uvx jobinja-employer-mcp` اگر uv دارید):
 
 </div>
 
 ```bash
-pipx install git+https://github.com/saeedsepehr/jobinja-employer-mcp
+pipx install jobinja-employer-mcp
 ```
 
 <div dir="rtl">
 
-۳. ورود یک‌باره به پنل: یک پنجره مرورگر باز می‌شود. وارد پنل کارفرمایی شوید؛ پنجره پس از بارگذاری پنل خودش بسته می‌شود.
+۳. ورود یک‌باره به پنل (یا از دستیار بخواهید ابزار `open_login_window` را اجرا کند): یک پنجره مرورگر باز می‌شود. وارد پنل کارفرمایی شوید؛ پنجره پس از بارگذاری پنل خودش بسته می‌شود.
 
 </div>
 

@@ -20,6 +20,7 @@ connectors) and any other MCP client.
 | Tool | What it does |
 | --- | --- |
 | `jobinja_status` | Is the saved session logged in, which company panel |
+| `open_login_window` | Open a browser window to sign in, no terminal needed |
 | `list_posts` | Job ads with per-stage applicant counts |
 | `list_applicants` | Applicants of an ad; filter by status, starred, has notes; shows star, note and folder flags |
 | `screen_applicants` | Compact, low-token digest of a page of applicants for quick shortlisting |
@@ -37,12 +38,18 @@ connectors) and any other MCP client.
 Rejection reasons based on gender or age are intentionally not offered. Set `JOBINJA_READ_ONLY=1` to hide all
 write tools. Opening an unreviewed applicant marks it as seen, exactly like opening it in the panel.
 
+## One-click install in Claude Desktop
+
+Download `jobinja-employer-mcp-<version>.mcpb` from the [latest release](https://github.com/saeedsepehr/jobinja-employer-mcp/releases/latest),
+double-click it (or install it under Settings → Extensions), then ask Claude to "open the Jobinja login window" and
+sign in once. Google Chrome must be installed.
+
 ## Install
 
 Requires Python 3.10+ and Google Chrome (or Microsoft Edge, or Playwright's bundled Chromium; see `JOBINJA_BROWSER`).
 
 ```bash
-pipx install git+https://github.com/saeedsepehr/jobinja-employer-mcp
+pipx install jobinja-employer-mcp        # or run without installing: uvx jobinja-employer-mcp
 jobinja-employer-mcp login      # a browser window opens: sign in to the employer panel once; it closes by itself
 ```
 
