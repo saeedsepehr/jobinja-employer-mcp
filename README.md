@@ -43,6 +43,18 @@
 
 باز کردن متقاضیِ «بررسی‌نشده» آن را دیده‌شده علامت می‌زند، دقیقاً مانند باز کردن آن در خود پنل.
 
+## نصب سریع در Claude Code (افزونه)
+
+اگر Claude Code دارید، این دستور را داخل Claude Code بزنید. افزونه همراه با یک راهنمای غربالگری (skill) نصب می‌شود و به [uv](https://docs.astral.sh/uv/getting-started/installation/) و Google Chrome نیاز دارد:
+
+</div>
+
+```
+/plugin install jobinja-employer --marketplace saeedsepehr/jobinja-employer-mcp
+```
+
+<div dir="rtl">
+
 ## نصب سریع در Claude Desktop (یک‌کلیکی)
 
 فایل `jobinja-employer-mcp-<نسخه>.mcpb` را از [صفحه انتشارها](https://github.com/saeedsepehr/jobinja-employer-mcp/releases/latest) دانلود کنید و روی آن دوبار کلیک کنید (یا در Claude Desktop از Settings ← Extensions آن را نصب کنید). سپس به Claude بگویید «پنجره ورود جابینجا را باز کن» و یک بار وارد پنل کارفرمایی شوید. Google Chrome باید نصب باشد.
@@ -159,6 +171,10 @@ cloudflared tunnel --url http://localhost:8765
 
 **این ابزار رسمی جابینجاست؟**
 خیر، jobinja-employer-mcp پروژه‌ای مستقل و غیررسمی است.
+
+## حریم خصوصی
+
+jobinja-employer-mcp کاملاً روی رایانه شما اجرا می‌شود و هیچ داده‌ای برای سازنده ارسال نمی‌کند: نه آمار استفاده، نه اطلاعات متقاضیان. نشست ورود در `~/.jobinja-mcp` و رزومه‌های دانلودشده در پوشه‌ای که تعیین می‌کنید می‌مانند تا خودتان پاکشان کنید. اطلاعاتی که ابزار از پنل می‌خواند فقط به دستیار هوش مصنوعی‌ای داده می‌شود که خودتان وصل کرده‌اید. متن کامل: [PRIVACY.md](PRIVACY.md).
 
 ## مشارکت
 

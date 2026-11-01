@@ -1,0 +1,17 @@
+{
+  "name": "saeedsepehr",
+  "owner": {
+    "name": "Saeed Sepehr",
+    "url": "https://github.com/saeedsepehr"
+  },
+  "metadata": {
+    "description": "Saeed Sepehr's plugins: Jobinja employer resume screening and shortlisting."
+  },
+  "plugins": [
+    {
+      "name": "jobinja-employer",
+      "source": "./",
+      "description": "Review and shortlist resumes received in the Jobinja employer panel with low token use."
+    }
+  ]
+}

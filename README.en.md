@@ -38,6 +38,14 @@ connectors) and any other MCP client.
 Rejection reasons based on gender or age are intentionally not offered. Set `JOBINJA_READ_ONLY=1` to hide all
 write tools. Opening an unreviewed applicant marks it as seen, exactly like opening it in the panel.
 
+## Install as a Claude Code plugin
+
+Inside Claude Code (needs [uv](https://docs.astral.sh/uv/getting-started/installation/) and Google Chrome); it also adds a resume-screening skill:
+
+```
+/plugin install jobinja-employer --marketplace saeedsepehr/jobinja-employer-mcp
+```
+
 ## One-click install in Claude Desktop
 
 Download `jobinja-employer-mcp-<version>.mcpb` from the [latest release](https://github.com/saeedsepehr/jobinja-employer-mcp/releases/latest),
@@ -105,6 +113,12 @@ consider `JOBINJA_READ_ONLY=1` for this mode. Delete `~/.jobinja-mcp/http_token`
 | `JOBINJA_READ_ONLY` | unset (write tools enabled) |
 | `JOBINJA_BROWSER` | `chrome`; also `msedge` or `chromium` (then run `playwright install chromium`) |
 | `JOBINJA_HTTP_TOKEN` | generated on first `jobinja-employer-mcp http` |
+
+## Privacy Policy
+
+The software runs entirely on your computer and sends nothing to the author: no analytics, no applicant data. Your
+Jobinja session stays in `~/.jobinja-mcp` and downloaded resumes stay in your download folder until you delete them.
+What the tools read from the panel goes only to the AI client you connected. Full policy: [PRIVACY.md](PRIVACY.md).
 
 ## Disclaimer
 

@@ -30,14 +30,15 @@ import sys
 from pathlib import Path
 
 from mcp.server.fastmcp import FastMCP
+from mcp.types import ToolAnnotations
 from playwright.async_api import async_playwright
 
 PANEL = "https://panel.jobinja.ir"
-HOME = Path(os.environ.get("JOBINJA_HOME", Path.home() / ".jobinja-mcp"))
+HOME = Path(os.environ.get("JOBINJA_HOME") or Path.home() / ".jobinja-mcp").expanduser()
 PROFILE_DIR = HOME / "profile"
-DOWNLOAD_DIR = Path(os.environ.get("JOBINJA_DOWNLOAD_DIR", Path.home() / "Downloads" / "jobinja-resumes")).expanduser()
-READ_ONLY = os.environ.get("JOBINJA_READ_ONLY", "") not in ("", "0", "false")
-BROWSER = os.environ.get("JOBINJA_BROWSER", "chrome")
+DOWNLOAD_DIR = Path(os.environ.get("JOBINJA_DOWNLOAD_DIR") or Path.home() / "Downloads" / "jobinja-resumes").expanduser()
+READ_ONLY = os.environ.get("JOBINJA_READ_ONLY", "").strip().lower() not in ("", "0", "false", "no")
+BROWSER = os.environ.get("JOBINJA_BROWSER") or "chrome"
 CHROME_ARGS = ["--disable-save-password-bubble", "--disable-features=PasswordManagerOnboarding"]
 PAGE_SIZE = 25
 
@@ -97,7 +98,7 @@ class Panel:
         self._pw = None
         self._ctx = None
         self.lock = asyncio.Lock()
-        self.company = os.environ.get("JOBINJA_COMPANY")
+        self.company = os.environ.get("JOBINJA_COMPANY") or None
 
     async def ctx(self):
         if self._ctx is None:
@@ -138,12 +139,18 @@ panel = Panel()
 mcp = FastMCP("jobinja")
 
 
-def write_tool(fn):
-    """Register a tool that changes data, unless the server runs read-only."""
-    return fn if READ_ONLY else mcp.tool()(fn)
+def tool(title: str, read_only: bool = True, destructive: bool = False, idempotent: bool = False):
+    """Register a tool with its MCP annotations. Tools that change data are skipped in read-only mode."""
+    ann = ToolAnnotations(
+        title=title, readOnlyHint=read_only, destructiveHint=None if read_only else destructive,
+        idempotentHint=idempotent, openWorldHint=True,
+    )
+    if not read_only and READ_ONLY:
+        return lambda fn: fn
+    return mcp.tool(title=title, annotations=ann)
 
 
-@mcp.tool()
+@tool("Check Jobinja session")
 async def jobinja_status() -> dict:
     """Check whether the saved Jobinja session is still logged in and which company panel it uses."""
     async with panel.lock:
@@ -154,7 +161,7 @@ async def jobinja_status() -> dict:
             return {"logged_in": False, "error": str(e)}
 
 
-@mcp.tool()
+@tool("List job ads")
 async def list_posts(status: str = "all") -> list[dict]:
     """List the company's job ads with applicant counts.
 
@@ -238,7 +245,7 @@ _ROWS_JS = """() => {
 }"""
 
 
-@mcp.tool()
+@tool("List applicants")
 async def list_applicants(
     post: str,
     status: str | None = None,
@@ -342,7 +349,7 @@ async def _details(p, applicant_id):
     return d
 
 
-@mcp.tool()
+@tool("Get applicant details")
 async def get_applicant(post: str, applicant_id: str, page_hint: int | None = None) -> dict:
     """Get one applicant: contact info, profile fields, Jobinja profile text, star, team notes, current decision and rejection reason.
 
@@ -383,7 +390,7 @@ async def _download(post, applicant_id, page_hint, dest: Path):
     return {"applicant_id": applicant_id, "name": d["name"], "path": str(path), "bytes": len(body)}
 
 
-@mcp.tool()
+@tool("Download resume")
 async def download_resume(post: str, applicant_id: str, page_hint: int | None = None, dest_dir: str | None = None) -> dict:
     """Download an applicant's attached resume file (usually PDF) and return its local path, ready to be read.
 
@@ -394,7 +401,7 @@ async def download_resume(post: str, applicant_id: str, page_hint: int | None = 
         return await _download(post, applicant_id, page_hint, dest)
 
 
-@mcp.tool()
+@tool("Download resumes in bulk")
 async def download_resumes(
     post: str, status: str | None = None, starred: bool = False, limit: int = 25, dest_dir: str | None = None
 ) -> dict:
@@ -460,7 +467,7 @@ async def _resume_text(p, resume_url: str | None) -> str | None:
     return _pdf_text(await resp.body())
 
 
-@mcp.tool()
+@tool("Get resume text")
 async def get_resume_text(post: str, applicant_id: str, max_chars: int = 6000, page_hint: int | None = None) -> dict:
     """Extracted plain text of an applicant's PDF resume, truncated to max_chars.
 
@@ -478,7 +485,7 @@ async def get_resume_text(post: str, applicant_id: str, max_chars: int = 6000, p
             "text": text[:max_chars] if text else None, "truncated": bool(text and len(text) > max_chars)}
 
 
-@mcp.tool()
+@tool("Screen applicants (compact digest)")
 async def screen_applicants(
     post: str, status: str | None = None, page: int = 1, resume_chars: int = 800, profile_chars: int = 500,
 ) -> dict:
@@ -520,7 +527,7 @@ async def screen_applicants(
     return {"post": post, "page": page, "total": total, "pages": max(1, -(-total // PAGE_SIZE)), "applicants": out}
 
 
-@mcp.tool()
+@tool("List rejection reasons")
 async def list_rejection_reasons() -> dict:
     """Rejection reasons accepted by reject_applicant (code -> panel label)."""
     return REJECTION_REASONS
@@ -543,7 +550,7 @@ async def _confirm_modal(p, url_part: str):
     await _click_and_wait(p, btn, url_part)
 
 
-@write_tool
+@tool("Star or unstar applicant", read_only=False, destructive=False, idempotent=True)
 async def set_star(post: str, applicant_id: str, starred: bool = True, page_hint: int | None = None) -> dict:
     """Star (starred=true) or unstar (starred=false) an applicant. Stars are internal to the company."""
     async with panel.lock:
@@ -561,7 +568,7 @@ async def set_star(post: str, applicant_id: str, starred: bool = True, page_hint
             await p.close()
 
 
-@write_tool
+@tool("Add team note", read_only=False, destructive=False, idempotent=False)
 async def add_note(post: str, applicant_id: str, text: str, page_hint: int | None = None) -> dict:
     """Add a confidential team note to an applicant (visible to company members only, not to the candidate)."""
     if not text.strip():
@@ -579,7 +586,7 @@ async def add_note(post: str, applicant_id: str, text: str, page_hint: int | Non
             await p.close()
 
 
-@write_tool
+@tool("Delete team note", read_only=False, destructive=True, idempotent=False)
 async def delete_note(post: str, applicant_id: str, text_contains: str, page_hint: int | None = None) -> dict:
     """Delete one team note whose text contains `text_contains` (e.g. to fix a mistaken note). Only notes you can delete in the panel."""
     async with panel.lock:
@@ -624,14 +631,14 @@ async def _folders(slug):
     return out
 
 
-@mcp.tool()
+@tool("List resume folders")
 async def list_folders() -> list[dict]:
     """List the company's resume folders (پوشه‌های رزومه) with their ids and per-stage counts."""
     async with panel.lock:
         return await _folders(await panel.company_slug())
 
 
-@mcp.tool()
+@tool("List applicants in folder")
 async def list_folder_applicants(folder_id: str, page: int = 1) -> dict:
     """List applicants saved in a resume folder, 25 per page. Each row includes the `post` it applied to."""
     async with panel.lock:
@@ -650,7 +657,7 @@ async def list_folder_applicants(folder_id: str, page: int = 1) -> dict:
             "pages": max(1, -(-total // PAGE_SIZE)), "applicants": data["rows"]}
 
 
-@write_tool
+@tool("Create resume folder", read_only=False, destructive=False, idempotent=True)
 async def create_folder(title: str) -> dict:
     """Create a new resume folder and return its id. If a folder with this exact title exists, returns it instead."""
     title = title.strip()
@@ -675,7 +682,7 @@ async def create_folder(title: str) -> dict:
     return {**made[0], "created": True}
 
 
-@write_tool
+@tool("Add or remove applicant from folders", read_only=False, destructive=True, idempotent=True)
 async def set_applicant_folders(
     post: str, applicant_id: str, add: list[str] | None = None, remove: list[str] | None = None,
     page_hint: int | None = None,
@@ -714,7 +721,7 @@ async def set_applicant_folders(
             await p.close()
 
 
-@write_tool
+@tool("Reject applicant", read_only=False, destructive=True, idempotent=False)
 async def reject_applicant(
     post: str, applicant_id: str, reason: int, message: str = "", page_hint: int | None = None,
     dry_run: bool = False,
@@ -745,7 +752,7 @@ async def reject_applicant(
             await p.close()
 
 
-@write_tool
+@tool("Restore applicant to awaiting decision", read_only=False, destructive=True, idempotent=False)
 async def restore_applicant(post: str, applicant_id: str, page_hint: int | None = None) -> dict:
     """Undo a decision: move an applicant back to "awaiting decision" (در انتظار تعیین وضعیت). Jobinja notifies the candidate."""
     async with panel.lock:
@@ -783,7 +790,7 @@ async def login(timeout_s: int = 900) -> bool:
     return ok
 
 
-@mcp.tool()
+@tool("Open Jobinja login window")
 async def open_login_window() -> dict:
     """Open a browser window on the user's screen to sign in to the Jobinja employer panel (first use, or when
     jobinja_status reports the session expired). The user types their own credentials; waits up to 10 minutes."""
@@ -793,7 +800,7 @@ async def open_login_window() -> dict:
             await panel._pw.stop()
             panel._ctx = panel._pw = None
         ok = await login(timeout_s=600)
-        panel.company = os.environ.get("JOBINJA_COMPANY")
+        panel.company = os.environ.get("JOBINJA_COMPANY") or None
     return {"logged_in": ok}
 
 

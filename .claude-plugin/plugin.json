@@ -1,0 +1,52 @@
+{
+  "name": "jobinja-employer",
+  "displayName": "Jobinja Employer — شورت‌لیست رزومه‌های جابینجا",
+  "version": "0.3.1",
+  "description": "For employers hiring on Jobinja: review the resumes your job ads receive, shortlist the best matches with low token use, and record stars, team notes, folders and rejections in the Jobinja employer panel. Unofficial.",
+  "author": {
+    "name": "Saeed Sepehr",
+    "url": "https://github.com/saeedsepehr"
+  },
+  "homepage": "https://github.com/saeedsepehr/jobinja-employer-mcp",
+  "repository": "https://github.com/saeedsepehr/jobinja-employer-mcp",
+  "license": "MIT",
+  "keywords": [
+    "jobinja",
+    "recruitment",
+    "resume-screening",
+    "shortlisting",
+    "hr",
+    "persian",
+    "جابینجا",
+    "استخدام"
+  ],
+  "documentationUrl": "https://github.com/saeedsepehr/jobinja-employer-mcp#readme",
+  "supportUrl": "https://github.com/saeedsepehr/jobinja-employer-mcp/issues",
+  "privacyPolicyUrl": "https://github.com/saeedsepehr/jobinja-employer-mcp/blob/main/PRIVACY.md",
+  "mcpServers": {
+    "jobinja": {
+      "command": "uvx",
+      "args": [
+        "jobinja-employer-mcp==0.3.1"
+      ],
+      "env": {
+        "JOBINJA_READ_ONLY": "${user_config.read_only}",
+        "JOBINJA_DOWNLOAD_DIR": "${user_config.download_dir}"
+      }
+    }
+  },
+  "userConfig": {
+    "read_only": {
+      "type": "boolean",
+      "title": "Read-only mode / حالت فقط‌خواندنی",
+      "description": "When on, Claude can read applicants and resumes but cannot star, add notes, change folders or reject.",
+      "default": false
+    },
+    "download_dir": {
+      "type": "directory",
+      "title": "Resume download folder / پوشه رزومه‌ها",
+      "description": "Where downloaded resume files are saved. Leave empty for ~/Downloads/jobinja-resumes."
+    }
+  },
+  "icon": "./.claude-plugin/icon.png"
+}

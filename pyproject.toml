@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "jobinja-employer-mcp"
-version = "0.3.0"
+version = "0.3.1"
 description = "مرور سریع و شورت‌لیست رزومه‌های دریافتی پنل کارفرمایی جابینجا با هوش مصنوعی و مصرف توکن کم — MCP server for Jobinja employers"
 readme = "README.md"
 license = { text = "MIT" }

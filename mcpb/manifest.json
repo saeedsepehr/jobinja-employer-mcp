@@ -2,20 +2,38 @@
   "manifest_version": "0.4",
   "name": "jobinja-employer-mcp",
   "display_name": "Jobinja Employer (جابینجا کارفرما)",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Review and shortlist resumes received in the Jobinja employer panel with low token use.",
   "long_description": "مرور سریع و شورت‌لیست رزومه‌های دریافتی پنل کارفرمایی جابینجا با هوش مصنوعی: خلاصه کم‌مصرف متقاضیان، متن رزومه، ستاره، یادداشت، پوشه‌بندی و رد با دلیل. بعد از نصب از Claude بخواهید پنجره ورود جابینجا را باز کند (open_login_window). نیازمند Google Chrome.",
-  "author": { "name": "Saeed Sepehr", "url": "https://github.com/saeedsepehr" },
-  "repository": { "type": "git", "url": "https://github.com/saeedsepehr/jobinja-employer-mcp" },
+  "author": {
+    "name": "Saeed Sepehr",
+    "url": "https://github.com/saeedsepehr"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/saeedsepehr/jobinja-employer-mcp"
+  },
   "homepage": "https://github.com/saeedsepehr/jobinja-employer-mcp",
   "license": "MIT",
-  "keywords": ["jobinja", "recruitment", "resume-screening", "shortlisting", "hr", "persian"],
+  "keywords": [
+    "jobinja",
+    "recruitment",
+    "resume-screening",
+    "shortlisting",
+    "hr",
+    "persian"
+  ],
   "server": {
     "type": "uv",
     "entry_point": "jobinja_mcp.py",
     "mcp_config": {
       "command": "uv",
-      "args": ["run", "--directory", "${__dirname}", "jobinja_mcp.py"],
+      "args": [
+        "run",
+        "--directory",
+        "${__dirname}",
+        "jobinja_mcp.py"
+      ],
       "env": {
         "JOBINJA_READ_ONLY": "${user_config.read_only}",
         "JOBINJA_DOWNLOAD_DIR": "${user_config.download_dir}"
@@ -39,7 +57,17 @@
     }
   },
   "compatibility": {
-    "platforms": ["darwin", "linux", "win32"],
-    "runtimes": { "python": ">=3.10" }
-  }
+    "platforms": [
+      "darwin",
+      "linux",
+      "win32"
+    ],
+    "runtimes": {
+      "python": ">=3.10"
+    }
+  },
+  "privacy_policies": [
+    "https://github.com/saeedsepehr/jobinja-employer-mcp/blob/main/PRIVACY.md"
+  ],
+  "icon": "icon.png"
 }
