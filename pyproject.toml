@@ -1,18 +1,19 @@
 [project]
-name = "jobinja-mcp"
-version = "0.1.0"
-description = "خودکارسازی رزومه‌خوانی و غربالگری متقاضیان جابینجا با هوش مصنوعی (Claude، ChatGPT، Codex) — MCP server for the Jobinja employer panel"
+name = "jobinja-employer-mcp"
+version = "0.2.0"
+description = "مرور سریع و شورت‌لیست رزومه‌های دریافتی پنل کارفرمایی جابینجا با هوش مصنوعی و مصرف توکن کم — MCP server for Jobinja employers"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
-keywords = ["mcp", "jobinja", "resume-screening", "recruitment-automation", "hr", "ats", "claude", "chatgpt", "persian", "جابینجا", "رزومه", "استخدام"]
-dependencies = ["mcp[cli]>=1.25,<2", "playwright>=1.45", "uvicorn>=0.30"]
+keywords = ["mcp", "jobinja", "resume-screening", "shortlisting", "employer", "recruitment-automation", "hr", "ats", "claude", "chatgpt", "persian", "جابینجا", "رزومه", "استخدام"]
+dependencies = ["mcp[cli]>=1.25,<2", "playwright>=1.45", "uvicorn>=0.30", "pypdf>=4"]
 
 [project.urls]
-Homepage = "https://github.com/saeedsepehr/jobinja-mcp"
-Issues = "https://github.com/saeedsepehr/jobinja-mcp/issues"
+Homepage = "https://github.com/saeedsepehr/jobinja-employer-mcp"
+Issues = "https://github.com/saeedsepehr/jobinja-employer-mcp/issues"
 
 [project.scripts]
+jobinja-employer-mcp = "jobinja_mcp:main"
 jobinja-mcp = "jobinja_mcp:main"
 
 [tool.setuptools]

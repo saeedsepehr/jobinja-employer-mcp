@@ -1,4 +1,4 @@
-"""Compatibility entry point: `python server.py [login|http]` is the same as `jobinja-mcp`."""
+"""Compatibility entry point: `python server.py [login|http]` is the same as `jobinja-employer-mcp`."""
 import sys
 
 import jobinja_mcp

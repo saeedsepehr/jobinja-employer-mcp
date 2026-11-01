@@ -1,3 +1,4 @@
 mcp[cli]>=1.25,<2
 playwright>=1.45
 uvicorn>=0.30
+pypdf>=4

@@ -1,8 +1,10 @@
-# jobinja-mcp
+# jobinja-employer-mcp
 
-An unofficial [MCP](https://modelcontextprotocol.io) server for the [Jobinja](https://jobinja.ir) employer panel.
-It lets an AI assistant work through your applicants the way a recruiter would: list job ads and applicants,
-read profiles, team notes and resumes, star, add notes, organise resume folders and reject.
+An unofficial [MCP](https://modelcontextprotocol.io) server for employers who hire on [Jobinja](https://jobinja.ir).
+It connects the **Jobinja employer panel** to Claude, ChatGPT or Codex so an AI assistant can review the resumes your
+job ads receive, shortlist the best matches and record the result in the panel (stars, team notes, folders,
+rejections), using few tokens: `screen_applicants` returns a compact digest per applicant and `get_resume_text`
+returns resume text instead of PDF files. It is for employer accounts only, not for job seekers.
 
 It drives the panel's own web UI with Playwright in a dedicated browser profile. It never sees or stores your
 password: you sign in once by hand and the session stays in that profile on your machine.
@@ -19,6 +21,8 @@ connectors) and any other MCP client.
 | `jobinja_status` | Is the saved session logged in, which company panel |
 | `list_posts` | Job ads with per-stage applicant counts |
 | `list_applicants` | Applicants of an ad; filter by status, starred, has notes; shows star, note and folder flags |
+| `screen_applicants` | Compact, low-token digest of a page of applicants for quick shortlisting |
+| `get_resume_text` | Extracted text of a PDF resume, no file transfer |
 | `get_applicant` | Contact info, profile fields, Jobinja profile text, star, team notes, decision and rejection reason |
 | `download_resume` / `download_resumes` | Save attached resume files (PDF) locally |
 | `list_folders` / `list_folder_applicants` | Resume folders and the applicants in each |
@@ -37,14 +41,14 @@ write tools. Opening an unreviewed applicant marks it as seen, exactly like open
 Requires Python 3.10+ and Google Chrome (or Microsoft Edge, or Playwright's bundled Chromium; see `JOBINJA_BROWSER`).
 
 ```bash
-pipx install git+https://github.com/saeedsepehr/jobinja-mcp
-jobinja-mcp login      # a browser window opens: sign in to the employer panel once; it closes by itself
+pipx install git+https://github.com/saeedsepehr/jobinja-employer-mcp
+jobinja-employer-mcp login      # a browser window opens: sign in to the employer panel once; it closes by itself
 ```
 
-(`uv tool install git+https://github.com/saeedsepehr/jobinja-mcp` works too. Without pipx/uv:
+(`uv tool install git+https://github.com/saeedsepehr/jobinja-employer-mcp` works too. Without pipx/uv:
 `python -m venv .venv`, then `.venv/bin/pip install .` or `.venv\Scripts\pip install .` on Windows.)
 
-When the session expires, run `jobinja-mcp login` again. Close the MCP client first: the browser profile can only
+When the session expires, run `jobinja-employer-mcp login` again. Close the MCP client first: the browser profile can only
 be open in one process at a time.
 
 ## Connect a client
@@ -52,29 +56,29 @@ be open in one process at a time.
 **Claude Code**
 
 ```bash
-claude mcp add -s user jobinja -- jobinja-mcp
+claude mcp add -s user jobinja -- jobinja-employer-mcp
 ```
 
 **Claude Desktop**: add to `claude_desktop_config.json` (macOS: `~/Library/Application Support/Claude/`,
 Windows: `%APPDATA%\Claude\`) and restart the app:
 
 ```json
-{ "mcpServers": { "jobinja": { "command": "jobinja-mcp" } } }
+{ "mcpServers": { "jobinja": { "command": "jobinja-employer-mcp" } } }
 ```
 
-If the app cannot find the command, use its full path (`which jobinja-mcp` / `where jobinja-mcp`).
+If the app cannot find the command, use its full path (`which jobinja-employer-mcp` / `where jobinja-employer-mcp`).
 
 **OpenAI Codex CLI**: add to `~/.codex/config.toml`:
 
 ```toml
 [mcp_servers.jobinja]
-command = "jobinja-mcp"
+command = "jobinja-employer-mcp"
 ```
 
 **ChatGPT (developer-mode connectors)**: ChatGPT only talks to remote MCP servers over HTTPS.
 
 ```bash
-jobinja-mcp http --port 8765                    # prints http://127.0.0.1:8765/<secret>/mcp
+jobinja-employer-mcp http --port 8765                    # prints http://127.0.0.1:8765/<secret>/mcp
 cloudflared tunnel --url http://localhost:8765  # prints a public https://….trycloudflare.com URL
 ```
 
@@ -92,7 +96,7 @@ consider `JOBINJA_READ_ONLY=1` for this mode. Delete `~/.jobinja-mcp/http_token`
 | `JOBINJA_DOWNLOAD_DIR` | `~/Downloads/jobinja-resumes` |
 | `JOBINJA_READ_ONLY` | unset (write tools enabled) |
 | `JOBINJA_BROWSER` | `chrome`; also `msedge` or `chromium` (then run `playwright install chromium`) |
-| `JOBINJA_HTTP_TOKEN` | generated on first `jobinja-mcp http` |
+| `JOBINJA_HTTP_TOKEN` | generated on first `jobinja-employer-mcp http` |
 
 ## Disclaimer
 

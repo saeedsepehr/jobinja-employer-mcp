@@ -15,12 +15,12 @@ Environment variables:
   JOBINJA_READ_ONLY     set to 1 to disable the tools that change data
   JOBINJA_BROWSER       "chrome" (default, uses installed Google Chrome), "msedge", or
                         "chromium" (Playwright's bundled browser: run `playwright install chromium`)
-  JOBINJA_HTTP_TOKEN    secret path segment for `jobinja-mcp http` (generated if unset)
+  JOBINJA_HTTP_TOKEN    secret path segment for `jobinja-employer-mcp http` (generated if unset)
 
 Commands:
-  jobinja-mcp           run as a stdio MCP server (Claude Code, Claude Desktop, Codex CLI, ...)
-  jobinja-mcp login     open a browser window once to sign in
-  jobinja-mcp http      serve over Streamable HTTP for remote clients such as ChatGPT connectors
+  jobinja-employer-mcp  run as a stdio MCP server (Claude Code, Claude Desktop, Codex CLI, ...)
+  jobinja-employer-mcp login     open a browser window once to sign in
+  jobinja-employer-mcp http      serve over Streamable HTTP for remote clients such as ChatGPT connectors
 """
 
 import asyncio
@@ -114,7 +114,7 @@ class Panel:
             await page.close()
             raise RuntimeError(
                 "Not logged in to Jobinja (session missing or expired). Run: "
-                "jobinja-mcp login"
+                "jobinja-employer-mcp login"
             )
         return page
 
@@ -424,6 +424,102 @@ async def download_resumes(
     return {"dest_dir": str(dest), "downloaded": results, "errors": errors}
 
 
+# Fields left out of screening digests: personal data that must not drive a hiring decision, plus contact details.
+_DIGEST_SKIP = {"جنسیت", "سال تولد", "وضعیت تاهل", "آدرس ایمیل", "آدرس محل سکونت"}
+
+
+def _strip_contacts(text: str) -> str:
+    text = re.sub(r"[\w.+-]+@[\w-]+\.[\w.]+", "", text)
+    # phone numbers: runs of digits/spaces/dashes/brackets holding at least 10 digits
+    phone = re.compile(r"\(?\+?[\d۰-۹][\d۰-۹ ()+-]{8,}[\d۰-۹]")
+    return phone.sub(lambda m: "" if len(re.findall(r"[\d۰-۹]", m.group())) >= 10 else m.group(), text).strip()
+
+
+def _pdf_text(body: bytes, max_pages: int = 4) -> str:
+    """Plain text of a PDF resume (first pages), with Arabic/Persian presentation forms normalised."""
+    import io
+    import unicodedata
+    from pypdf import PdfReader
+
+    try:
+        reader = PdfReader(io.BytesIO(body))
+        text = "\n".join((pg.extract_text() or "") for pg in reader.pages[:max_pages])
+    except Exception as e:
+        return f"[could not read PDF: {e}]"
+    return re.sub(r"[ \t]+", " ", re.sub(r"\s*\n\s*", "\n", unicodedata.normalize("NFKC", text))).strip()
+
+
+async def _resume_text(p, resume_url: str | None) -> str | None:
+    if not resume_url:
+        return None
+    resp = await p.context.request.get(resume_url)
+    if not resp.ok:
+        return f"[download failed: HTTP {resp.status}]"
+    if not resume_url.split("?")[0].lower().endswith(".pdf"):
+        return "[resume is not a PDF; use download_resume]"
+    return _pdf_text(await resp.body())
+
+
+@mcp.tool()
+async def get_resume_text(post: str, applicant_id: str, max_chars: int = 6000, page_hint: int | None = None) -> dict:
+    """Extracted plain text of an applicant's PDF resume, truncated to max_chars.
+
+    Much cheaper in tokens than reading the PDF itself. Scanned (image-only) PDFs give little or no text;
+    use download_resume for those.
+    """
+    async with panel.lock:
+        p = await _open_applicant(post, applicant_id, page_hint)
+        try:
+            d = await _details(p, applicant_id)
+            text = await _resume_text(p, d["resume_url"])
+        finally:
+            await p.close()
+    return {"applicant_id": applicant_id, "name": d["name"], "has_resume_file": bool(d["resume_url"]),
+            "text": text[:max_chars] if text else None, "truncated": bool(text and len(text) > max_chars)}
+
+
+@mcp.tool()
+async def screen_applicants(
+    post: str, status: str | None = None, page: int = 1, resume_chars: int = 800, profile_chars: int = 500,
+) -> dict:
+    """Compact screening digest of one page (up to 25) of applicants, for fast, low-token shortlisting.
+
+    For each applicant: headline, status, star, notes, folders, key profile fields (work history, education,
+    skills) and the first `resume_chars` characters of the PDF resume text. Gender, birth year, marital status
+    and contact details are left out on purpose. Read the digests, then use get_resume_text / get_applicant only
+    for the promising ones. Takes about a minute per page; opening pending applicants marks them as seen.
+    """
+    async with panel.lock:
+        slug = await panel.company_slug()
+        p = await panel.page(_applicants_url(slug, post, status, page))
+        out = []
+        try:
+            data = await p.evaluate(_ROWS_JS)
+            for r in data["rows"]:
+                aid = r["applicant_id"]
+                item = {k: r[k] for k in ("applicant_id", "name", "headline", "status", "applied", "starred", "notes", "folders")}
+                item["notes"] = latin(item["notes"])
+                try:
+                    await p.locator(f'tr[data-candidate-box-url$="/applicants/{aid}"] a[name=title]').click()
+                    await p.wait_for_selector(f"{_box(aid)} .candidate-box-side", timeout=25000)
+                    d = await _details(p, aid)
+                    fields = {k: v for k, v in d["fields"].items() if k not in _DIGEST_SKIP and not k.startswith("زبان")}
+                    item["profile"] = " | ".join(f"{k}: {v}" for k, v in fields.items())[:profile_chars]
+                    text = await _resume_text(p, d["resume_url"])
+                    if text:  # contact details cost tokens and are not needed for screening
+                        text = _strip_contacts(text)
+                    item["resume"] = text[:resume_chars] if text else None
+                except Exception as e:  # keep going on single failures
+                    item["error"] = str(e)
+                await p.keyboard.press("Escape")
+                await p.wait_for_timeout(300)
+                out.append(item)
+        finally:
+            await p.close()
+    total = to_int(data["range"][2]) if data["range"] else len(out)
+    return {"post": post, "page": page, "total": total, "pages": max(1, -(-total // PAGE_SIZE)), "applicants": out}
+
+
 @mcp.tool()
 async def list_rejection_reasons() -> dict:
     """Rejection reasons accepted by reject_applicant (code -> panel label)."""
@@ -708,7 +804,7 @@ def serve_http(host: str, port: int):
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(prog="jobinja-mcp", description="MCP server for the Jobinja employer panel")
+    parser = argparse.ArgumentParser(prog="jobinja-employer-mcp", description="MCP server for the Jobinja employer panel")
     sub = parser.add_subparsers(dest="cmd")
     sub.add_parser("login", help="sign in once in a browser window")
     http = sub.add_parser("http", help="serve over Streamable HTTP (ChatGPT connectors, remote clients)")
