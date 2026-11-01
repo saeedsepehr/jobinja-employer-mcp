@@ -1,100 +1,160 @@
-# jobinja-mcp
+<div dir="rtl">
 
-An unofficial [MCP](https://modelcontextprotocol.io) server for the [Jobinja](https://jobinja.ir) employer panel.
-It lets an AI assistant work through your applicants the way a recruiter would: list job ads and applicants,
-read profiles, team notes and resumes, star, add notes, organise resume folders and reject.
+# jobinja-mcp | خودکارسازی رزومه‌خوانی و غربالگری متقاضیان جابینجا با هوش مصنوعی
 
-It drives the panel's own web UI with Playwright in a dedicated browser profile. It never sees or stores your
-password: you sign in once by hand and the session stays in that profile on your machine.
+**jobinja-mcp** ابزاری متن‌باز و رایگان برای کارفرمایان و تیم‌های منابع انسانی است که پنل کارفرمایی [جابینجا](https://jobinja.ir) را به دستیارهای هوش مصنوعی مثل **Claude**، **ChatGPT** و **Codex** وصل می‌کند. با آن می‌توانید رزومه‌خوانی، غربالگری اولیه متقاضیان و کارهای تکراری جذب و استخدام را به هوش مصنوعی بسپارید و وقت تیم را برای مصاحبه و تصمیم‌گیری نگه دارید.
 
-Works on Windows, macOS and Linux, with Claude Code, Claude Desktop, OpenAI Codex CLI, ChatGPT (developer-mode
-connectors) and any other MCP client.
+کافی است به دستیار بگویید «رزومه‌های جدید آگهی کارشناس پشتیبانی را بخوان، به مرتبط‌ترین‌ها ستاره بزن و برای هر کدام خلاصه بنویس». دستیار آگهی‌ها و متقاضیان را مرور می‌کند، رزومه‌ها را دانلود و تحلیل می‌کند و نتیجه را مستقیم در پنل جابینجا ثبت می‌کند: ستاره، یادداشت محرمانه تیم، پوشه‌بندی رزومه‌ها و در صورت تأیید شما، رد درخواست با دلیل مشخص.
 
-راهنمای فارسی: [docs/README.fa.md](docs/README.fa.md)
+این پروژه بر پایه پروتکل استاندارد [MCP](https://modelcontextprotocol.io) (Model Context Protocol) ساخته شده و روی ویندوز، مک و لینوکس کار می‌کند.
 
-## Tools
+### چرا jobinja-mcp؟
 
-| Tool | What it does |
+- **صرفه‌جویی در زمان غربالگری رزومه:** خواندن صدها رزومه برای هر آگهی به چند دقیقه کار دستیار هوش مصنوعی تبدیل می‌شود.
+- **کار مستقیم در پنل جابینجا:** خروجی در همان جایی ثبت می‌شود که تیم استخدام هر روز با آن کار می‌کند. نیازی به خروجی گرفتن یا جابه‌جایی داده نیست.
+- **امنیت حساب کاربری:** رمز عبور شما هیچ‌وقت در اختیار ابزار قرار نمی‌گیرد. یک بار خودتان وارد پنل می‌شوید و نشست ورود فقط روی رایانه خودتان می‌ماند.
+- **استخدام منصفانه:** دلایل رد مبتنی بر جنسیت یا سن عمداً در ابزار وجود ندارد.
+- **کنترل کامل:** می‌توانید ابزار را در حالت فقط‌خواندنی اجرا کنید تا دستیار هیچ تغییری در پنل ندهد.
+
+[English README](README.en.md)
+
+## قابلیت‌ها
+
+| ابزار | کاربرد |
 | --- | --- |
-| `jobinja_status` | Is the saved session logged in, which company panel |
-| `list_posts` | Job ads with per-stage applicant counts |
-| `list_applicants` | Applicants of an ad; filter by status, starred, has notes; shows star, note and folder flags |
-| `get_applicant` | Contact info, profile fields, Jobinja profile text, star, team notes, decision and rejection reason |
-| `download_resume` / `download_resumes` | Save attached resume files (PDF) locally |
-| `list_folders` / `list_folder_applicants` | Resume folders and the applicants in each |
-| `create_folder` | Create a resume folder |
-| `set_applicant_folders` | Add an applicant to / remove it from folders |
-| `set_star` | Star / unstar an applicant |
-| `add_note` / `delete_note` | Add a confidential team note / delete a mistaken one |
-| `list_rejection_reasons` / `reject_applicant` | Reject with a reason (Jobinja notifies the candidate); `dry_run` fills the form without submitting |
-| `restore_applicant` | Move back to "awaiting decision" |
+| `jobinja_status` | بررسی وضعیت ورود و شرکت متصل |
+| `list_posts` | فهرست آگهی‌های استخدام با تعداد متقاضیان در هر مرحله |
+| `list_applicants` | فهرست متقاضیان هر آگهی با فیلتر وضعیت، ستاره‌دار و دارای یادداشت |
+| `get_applicant` | اطلاعات تماس، پروفایل جابینجا، یادداشت‌های تیم، وضعیت و دلیل رد |
+| `download_resume` و `download_resumes` | دانلود فایل رزومه (PDF) برای خواندن و تحلیل |
+| `list_folders` و `list_folder_applicants` | پوشه‌های رزومه و متقاضیان هر پوشه |
+| `create_folder` و `set_applicant_folders` | ساخت پوشه و افزودن یا حذف متقاضی از پوشه |
+| `set_star` | ستاره زدن یا برداشتن ستاره |
+| `add_note` و `delete_note` | افزودن یادداشت محرمانه تیم یا حذف یادداشت اشتباه |
+| `list_rejection_reasons` و `reject_applicant` | رد درخواست با دلیل (جابینجا به متقاضی اطلاع می‌دهد)؛ با `dry_run` فقط فرم پر می‌شود |
+| `restore_applicant` | بازگرداندن متقاضی به «در انتظار تعیین وضعیت» |
 
-Rejection reasons based on gender or age are intentionally not offered. Set `JOBINJA_READ_ONLY=1` to hide all
-write tools. Opening an unreviewed applicant marks it as seen, exactly like opening it in the panel.
+باز کردن متقاضیِ «بررسی‌نشده» آن را دیده‌شده علامت می‌زند، دقیقاً مانند باز کردن آن در خود پنل.
 
-## Install
+## نصب
 
-Requires Python 3.10+ and Google Chrome (or Microsoft Edge, or Playwright's bundled Chromium; see `JOBINJA_BROWSER`).
+پیش‌نیازها: پایتون ۳.۱۰ یا جدیدتر و مرورگر Google Chrome. اگر Chrome ندارید، Edge هم کار می‌کند (`JOBINJA_BROWSER=msedge`) یا مرورگر داخلی Playwright (`JOBINJA_BROWSER=chromium` و سپس `playwright install chromium`).
+
+۱. نصب pipx (فقط یک بار):
+   - ویندوز: `py -m pip install --user pipx` و سپس `py -m pipx ensurepath`
+   - مک: `brew install pipx` و سپس `pipx ensurepath`
+   - لینوکس: `sudo apt install pipx` و سپس `pipx ensurepath`
+
+   پس از `ensurepath` پنجره ترمینال را ببندید و دوباره باز کنید.
+
+۲. نصب jobinja-mcp:
+
+</div>
 
 ```bash
 pipx install git+https://github.com/saeedsepehr/jobinja-mcp
-jobinja-mcp login      # a browser window opens: sign in to the employer panel once; it closes by itself
 ```
 
-(`uv tool install git+https://github.com/saeedsepehr/jobinja-mcp` works too. Without pipx/uv:
-`python -m venv .venv`, then `.venv/bin/pip install .` or `.venv\Scripts\pip install .` on Windows.)
+<div dir="rtl">
 
-When the session expires, run `jobinja-mcp login` again. Close the MCP client first: the browser profile can only
-be open in one process at a time.
+۳. ورود یک‌باره به پنل: یک پنجره مرورگر باز می‌شود. وارد پنل کارفرمایی شوید؛ پنجره پس از بارگذاری پنل خودش بسته می‌شود.
 
-## Connect a client
+</div>
 
-**Claude Code**
+```bash
+jobinja-mcp login
+```
+
+<div dir="rtl">
+
+اگر نشست ورود منقضی شد، همین دستور را دوباره اجرا کنید. پیش از آن برنامه‌ای را که از jobinja-mcp استفاده می‌کند ببندید.
+
+## اتصال به Claude، ChatGPT و Codex
+
+**Claude Code:**
+
+</div>
 
 ```bash
 claude mcp add -s user jobinja -- jobinja-mcp
 ```
 
-**Claude Desktop**: add to `claude_desktop_config.json` (macOS: `~/Library/Application Support/Claude/`,
-Windows: `%APPDATA%\Claude\`) and restart the app:
+<div dir="rtl">
+
+**Claude Desktop:** این تنظیم را به فایل `claude_desktop_config.json` اضافه کنید و برنامه را دوباره باز کنید. مسیر فایل در مک `~/Library/Application Support/Claude/` و در ویندوز `%APPDATA%\Claude\` است. اگر برنامه دستور را پیدا نکرد، مسیر کامل آن را بنویسید (`where jobinja-mcp` در ویندوز، `which jobinja-mcp` در مک و لینوکس).
+
+</div>
 
 ```json
 { "mcpServers": { "jobinja": { "command": "jobinja-mcp" } } }
 ```
 
-If the app cannot find the command, use its full path (`which jobinja-mcp` / `where jobinja-mcp`).
+<div dir="rtl">
 
-**OpenAI Codex CLI**: add to `~/.codex/config.toml`:
+**OpenAI Codex CLI:** به فایل `~/.codex/config.toml` اضافه کنید:
+
+</div>
 
 ```toml
 [mcp_servers.jobinja]
 command = "jobinja-mcp"
 ```
 
-**ChatGPT (developer-mode connectors)**: ChatGPT only talks to remote MCP servers over HTTPS.
+<div dir="rtl">
+
+**ChatGPT (کانکتور حالت توسعه‌دهنده):** ChatGPT فقط به سرورهای راه دور با HTTPS وصل می‌شود.
+
+</div>
 
 ```bash
-jobinja-mcp http --port 8765                    # prints http://127.0.0.1:8765/<secret>/mcp
-cloudflared tunnel --url http://localhost:8765  # prints a public https://….trycloudflare.com URL
+jobinja-mcp http --port 8765
+cloudflared tunnel --url http://localhost:8765
 ```
 
-In ChatGPT open Settings → Apps & Connectors → Advanced → enable Developer mode, then create a connector with
-URL `https://….trycloudflare.com/<secret>/mcp` and no authentication. The secret path is the only protection:
-anyone with the URL can use your Jobinja session, so keep it private, stop the tunnel when you are done, and
-consider `JOBINJA_READ_ONLY=1` for this mode. Delete `~/.jobinja-mcp/http_token` to rotate the secret.
+<div dir="rtl">
 
-## Configuration
+دستور اول نشانی‌ای با یک بخش مخفی می‌دهد (`/<secret>/mcp`) و دستور دوم یک نشانی عمومی `https://….trycloudflare.com`. در ChatGPT به Settings ← Apps & Connectors ← Advanced بروید، Developer mode را روشن کنید و کانکتوری با نشانی `https://….trycloudflare.com/<secret>/mcp` و بدون احراز هویت بسازید.
 
-| Variable | Default |
+> **هشدار:** هر کسی این نشانی را داشته باشد به نشست جابینجای شما دسترسی دارد. نشانی را در اختیار کسی قرار ندهید، پس از کار تونل را ببندید و در این حالت بهتر است `JOBINJA_READ_ONLY=1` را تنظیم کنید. برای تغییر بخش مخفی، فایل `~/.jobinja-mcp/http_token` را حذف کنید.
+
+## نمونه درخواست‌ها از دستیار
+
+- «آگهی‌های فعالم را با تعداد رزومه‌های بررسی‌نشده نشان بده.»
+- «همه رزومه‌های آگهی برنامه‌نویس جاوا را بخوان و پنج نفری را که بیشترین تطابق را با شرح آگهی دارند ستاره بزن و دلیلش را یادداشت کن.»
+- «برای متقاضیانی که سابقه بانکی دارند پوشه «سابقه بانکی» بساز و اضافه‌شان کن.»
+- «متقاضیانی را که هیچ تجربه فنی مرتبط ندارند فهرست کن، ولی ردشان نکن.»
+
+## تنظیمات
+
+| متغیر | پیش‌فرض |
 | --- | --- |
-| `JOBINJA_HOME` | `~/.jobinja-mcp` (browser profile and HTTP secret live here) |
-| `JOBINJA_COMPANY` | auto-detected company slug |
+| `JOBINJA_HOME` | `~/.jobinja-mcp` (پروفایل مرورگر و نشست ورود) |
+| `JOBINJA_COMPANY` | به‌صورت خودکار از پنل |
 | `JOBINJA_DOWNLOAD_DIR` | `~/Downloads/jobinja-resumes` |
-| `JOBINJA_READ_ONLY` | unset (write tools enabled) |
-| `JOBINJA_BROWSER` | `chrome`; also `msedge` or `chromium` (then run `playwright install chromium`) |
-| `JOBINJA_HTTP_TOKEN` | generated on first `jobinja-mcp http` |
+| `JOBINJA_READ_ONLY` | خالی (ابزارهای تغییردهنده فعال‌اند) |
+| `JOBINJA_BROWSER` | `chrome` (یا `msedge` یا `chromium`) |
+| `JOBINJA_HTTP_TOKEN` | در اولین اجرای `jobinja-mcp http` ساخته می‌شود |
 
-## Disclaimer
+## پرسش‌های رایج
 
-Not affiliated with Jobinja. The panel's markup can change and break the tools; use it within Jobinja's terms of
-service and your local privacy rules, since applicant data is personal data.
+**آیا jobinja-mcp رمز عبور جابینجای من را ذخیره می‌کند؟**
+خیر. ورود را خودتان در پنجره مرورگر انجام می‌دهید و ابزار فقط از نشست ذخیره‌شده در پروفایل جداگانه مرورگر روی رایانه شما استفاده می‌کند.
+
+**آیا اطلاعات متقاضیان جایی ارسال می‌شود؟**
+داده‌ها فقط به دستیار هوش مصنوعی‌ای که خودتان وصل کرده‌اید داده می‌شود. رزومه‌های دانلودشده روی رایانه شما ذخیره می‌شوند. سیاست حریم خصوصی سرویس هوش مصنوعی انتخابی و قوانین حفاظت از داده‌های شخصی را رعایت کنید.
+
+**آیا دستیار بدون اجازه من درخواست‌ها را رد می‌کند؟**
+فقط اگر از او بخواهید. رد درخواست به متقاضی اطلاع داده می‌شود، پس پیشنهاد می‌شود ابتدا از دستیار بخواهید پیشنهاد رد را به‌صورت یادداشت ثبت کند تا خودتان بررسی کنید. در حالت `JOBINJA_READ_ONLY=1` هیچ تغییری ممکن نیست.
+
+**این ابزار رسمی جابینجاست؟**
+خیر، jobinja-mcp پروژه‌ای مستقل و غیررسمی است.
+
+## مشارکت
+
+باگ‌ها و پیشنهادها را در [Issues](https://github.com/saeedsepehr/jobinja-mcp/issues) ثبت کنید. اگر ساختار پنل جابینجا تغییر کرد و ابزاری از کار افتاد، Pull Request بسیار کمک می‌کند. هرگز فایل رزومه، داده متقاضی یا پوشه `~/.jobinja-mcp` را در Issue یا مخزن قرار ندهید.
+
+## سلب مسئولیت
+
+این پروژه وابسته به جابینجا نیست. تغییر ساختار پنل ممکن است ابزارها را از کار بیندازد. استفاده از آن باید مطابق قوانین جابینجا و مقررات حفاظت از داده‌های شخصی باشد. مجوز انتشار: [MIT](LICENSE).
+
+</div>

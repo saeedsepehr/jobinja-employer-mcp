@@ -1,11 +1,11 @@
 [project]
 name = "jobinja-mcp"
 version = "0.1.0"
-description = "MCP server for the Jobinja employer panel: job ads, applicants, resumes, stars, notes, folders and rejections."
+description = "خودکارسازی رزومه‌خوانی و غربالگری متقاضیان جابینجا با هوش مصنوعی (Claude، ChatGPT، Codex) — MCP server for the Jobinja employer panel"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
-keywords = ["mcp", "jobinja", "recruiting", "ats", "claude", "chatgpt", "playwright"]
+keywords = ["mcp", "jobinja", "resume-screening", "recruitment-automation", "hr", "ats", "claude", "chatgpt", "persian", "جابینجا", "رزومه", "استخدام"]
 dependencies = ["mcp[cli]>=1.25,<2", "playwright>=1.45", "uvicorn>=0.30"]
 
 [project.urls]
