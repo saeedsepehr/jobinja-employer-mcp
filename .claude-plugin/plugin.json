@@ -28,24 +28,7 @@
       "command": "uvx",
       "args": [
         "jobinja-employer-mcp==0.3.1"
-      ],
-      "env": {
-        "JOBINJA_READ_ONLY": "${user_config.read_only}",
-        "JOBINJA_DOWNLOAD_DIR": "${user_config.download_dir}"
-      }
-    }
-  },
-  "userConfig": {
-    "read_only": {
-      "type": "boolean",
-      "title": "Read-only mode / حالت فقط‌خواندنی",
-      "description": "When on, Claude can read applicants and resumes but cannot star, add notes, change folders or reject.",
-      "default": false
-    },
-    "download_dir": {
-      "type": "directory",
-      "title": "Resume download folder / پوشه رزومه‌ها",
-      "description": "Where downloaded resume files are saved. Leave empty for ~/Downloads/jobinja-resumes."
+      ]
     }
   },
   "icon": "./.claude-plugin/icon.png"
