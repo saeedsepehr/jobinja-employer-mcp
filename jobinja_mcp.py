@@ -15,7 +15,6 @@ Environment variables:
   JOBINJA_READ_ONLY     set to 1 to disable the tools that change data
   JOBINJA_BROWSER       "chrome" (default, uses installed Google Chrome), "msedge", or
                         "chromium" (Playwright's bundled browser: run `playwright install chromium`)
-  JOBINJA_HTTP_TOKEN    secret path segment for `jobinja-employer-mcp http` (generated if unset)
 
 Commands:
   jobinja-employer-mcp  run as a stdio MCP server (Claude Code, Claude Desktop, Codex CLI, ...)
@@ -810,13 +809,11 @@ def serve_http(host: str, port: int):
     import uvicorn
     from mcp.server.transport_security import TransportSecuritySettings
 
-    token = os.environ.get("JOBINJA_HTTP_TOKEN")
     token_file = HOME / "http_token"
-    if not token:
-        HOME.mkdir(parents=True, exist_ok=True)
-        if not token_file.exists():
-            token_file.write_text(secrets.token_urlsafe(24))
-        token = token_file.read_text().strip()
+    HOME.mkdir(parents=True, exist_ok=True)
+    if not token_file.exists():
+        token_file.write_text(secrets.token_urlsafe(24))
+    token = token_file.read_text().strip()
     # Requests arrive through a tunnel with its own Host header, so host checks are off; the secret path guards access.
     mcp.settings.transport_security = TransportSecuritySettings(enable_dns_rebinding_protection=False)
     mcp.settings.streamable_http_path = f"/{token}/mcp"

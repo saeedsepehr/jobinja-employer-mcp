@@ -156,7 +156,6 @@ cloudflared tunnel --url http://localhost:8765
 | `JOBINJA_DOWNLOAD_DIR` | `~/Downloads/jobinja-resumes` |
 | `JOBINJA_READ_ONLY` | خالی (ابزارهای تغییردهنده فعال‌اند) |
 | `JOBINJA_BROWSER` | `chrome` (یا `msedge` یا `chromium`) |
-| `JOBINJA_HTTP_TOKEN` | در اولین اجرای `jobinja-employer-mcp http` ساخته می‌شود |
 
 ## پرسش‌های رایج
 

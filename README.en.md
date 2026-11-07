@@ -112,7 +112,6 @@ consider `JOBINJA_READ_ONLY=1` for this mode. Delete `~/.jobinja-mcp/http_token`
 | `JOBINJA_DOWNLOAD_DIR` | `~/Downloads/jobinja-resumes` |
 | `JOBINJA_READ_ONLY` | unset (write tools enabled) |
 | `JOBINJA_BROWSER` | `chrome`; also `msedge` or `chromium` (then run `playwright install chromium`) |
-| `JOBINJA_HTTP_TOKEN` | generated on first `jobinja-employer-mcp http` |
 
 ## Privacy Policy
 
